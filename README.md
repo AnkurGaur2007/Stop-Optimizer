@@ -14,22 +14,7 @@ The one difference worth naming: this planner tries to reorder your stops to sav
 
 You need JDK 17 or newer (<https://adoptium.net>). Nothing is downloaded: there are no dependencies.
 
-**Linux or macOS: run `run.sh`.** It does the same four steps (Java check, compile, start, open the page):
-
-```
-chmod +x run.sh
-./run.sh
-```
-
 The launcher compiles first, so a compile error is shown in the same window and the server is not started. It calls `javac` on the three source folders, which means no build tool is involved and no dependency is downloaded.
-
-The port defaults to 8080. To change it, pass it as the first argument (`run.bat 8081` or `./run.sh 8081`) or set `ROUTENAV_PORT`. Running the class file directly takes the port too:
-
-```
-java -cp out routenav.Main 8081
-```
-
-Windows SmartScreen may warn about an unknown publisher the first time you run `run.bat`. Choose "More info", then "Run anyway".
 
 ## How it works
 
@@ -211,29 +196,6 @@ curl "http://localhost:8081/api/nearest?from=College%20Gate&type=train"
 ```
 
 The trip above must answer `yourOrder` 11.5 km / 25.0 min, `optimized` 8.3 km / 18.6 min and `minutesSaved` 6.4. `GET /api/map` must hold 18 locations and 31 roads. A body of `not json` must answer HTTP 400 with `Could not read the request.`
-
-A manual checklist for the page:
-
-1. Open the page. Both lists fill with 18 places, sorted; both start on "Choose...".
-2. Plan College Gate to Grand Mall with stops Central Market, City Hospital and Public Library. The big number is 6.4 with "minutes saved" under it, "Your order" shows 11.5 km / 25.0 min, "Optimized order" shows 8.3 km / 18.6 min, there are 4 legs, and the summary says "You save 6.4 min."
-3. The map draws the optimized trip as one orange-to-amber line that draws itself once, numbers the stops 1 to 5, marks the start with a filled orange dot and the destination with a ring, and dims the roads you are not using. A thin dashed cream line shows your own order. The view fits the route with a margin.
-4. Hover a road: a tooltip reads "Old Town Square to Public Library, 0.6 km, quiet" (the places and numbers come from that road). Hover or focus a place: its dot grows a ring and its label stays visible.
-5. Press + twice, then the reset button: the view zooms from 1x to about 2x and back to the whole city, and the label text stays the same size on screen while the map grows. Drag pans; the mouse wheel zooms around the pointer.
-6. Tab to a place and press Enter, then Escape: the place menu opens and closes without a mouse.
-7. Tick "Return to the start when the trip ends". The destination greys out, planning still works, and the last stop is the start again.
-8. Add three stops, then remove the middle one. The remaining labels renumber to Stop 1 and Stop 2.
-9. Stop the server and press Plan route. The message is "Could not reach the server. Is it running?" and the previous plan disappears instead of sitting under the error.
-10. Press "Try an example". Start becomes College Gate, Destination City Hospital, there are three stops (Grand Mall, Public Library, Central Market), the return box is unticked, and the message is "Example loaded. Press Plan route." Nothing is sent until you press Plan route.
-11. Pick any start and destination and press "Swap": the two values trade places. Tick "Return to the start when the trip ends" and Swap is greyed out.
-12. Press "Reset": both lists return to "Choose...", every stop row disappears, Destination is enabled again, the results hide, the drawn route disappears, the view returns to the whole city, and the message clears.
-13. Plan a trip and press "Copy plan". The message is "Plan copied." and the clipboard holds the start and destination (or "Round trip from ..."), both orders with their distance and time, the minutes saved, and one line per leg. Above 7 stops the text also carries the "good guess, not guaranteed" sentence.
-14. After a plan, every leg shows "about N km/h" after its km and min. The first leg of the sample trip is 0.9 km in 1.8 min, so it reads about 30 km/h.
-15. Hover a leg row: its line thickens on the map. Hover a route line: that leg row highlights.
-16. Click a place on the map. A small popover offers "Set as start", "Set as destination" and "Add as stop"; with the return box ticked the destination line is greyed out. Adding a stop creates a new stop row with that place already chosen.
-17. Each leg shows a thin bar split into quiet, busy and jammed kilometres, with the same split written under it, and the legend under the map explains the colours. The map's own roads use the same styles: solid sea green for quiet, solid amber for busy, dashed coral red for jammed.
-18. Look at the page background: it is the near-black --bg (#0a0606) everywhere, with no lighter panel behind the map.
-19. Make the window narrow (about 390px). The planner, the map and the results stack; labels are 13px and the map fits the card instead of scrolling sideways. Plan the sample trip: only its five stops keep labels, and tapping another place shows its name and menu.
-20. Check the map is readable at 1440, 1024 and 390: no label is cut off at an edge, and the route line, stop numbers and traffic styles can be told apart.
 
 ## Known limitations
 
