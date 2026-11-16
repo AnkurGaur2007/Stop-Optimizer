@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Smart City Route Navigator</title>
+    <meta name="description" content="Plan a trip through a fictional city. Pick a start, a destination and any stops, and the planner tries to find a quicker order for them.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-head">
+    <div class="container site-head-inner">
+        <a class="brand" href="#top" aria-label="Route Navigator, back to the top">
+            <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                <path d="M5 25 L13 9 L19 21 L27 7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <circle cx="5" cy="25" r="2.6" fill="currentColor"/>
+                <circle cx="27" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            </svg>
+            <span class="wordmark">Route Navigator</span>
+        </a>
+        <button type="button" id="example-button" class="pill pill-ghost pill-small">Try an example</button>
+    </div>
+</header>
+
+<main class="container" id="top">
+    <section class="console" aria-labelledby="page-title">
+        <div class="console-rail">
+            <h1 id="page-title">Find the quicker way round.</h1>
+            <p class="hero-sub">Pick your places. The planner reorders your stops and shows every leg.</p>
+
+            <section class="panel planner" aria-labelledby="trip-heading">
+                <h2 id="trip-heading">Plan a trip</h2>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="start-select">Start</label>
+                        <select id="start-select"></select>
+                    </div>
+                    <div class="field">
+                        <label for="end-select">Destination</label>
+                        <select id="end-select"></select>
+                    </div>
+                </div>
+
+                <div class="check-row">
+                    <input type="checkbox" id="return-checkbox">
+                    <label for="return-checkbox">Return to the start when the trip ends</label>
+                </div>
+
+                <div class="field">
+                    <label for="depart-time">Leave at</label>
+                    <input type="time" id="depart-time" value="09:00">
+                </div>
+
+                <div class="field stops-field">
+                    <div class="stops-head">
+                        <span class="field-label">Stops (optional)</span>
+                        <button type="button" id="add-stop-button" class="pill pill-ghost pill-small">Add stop</button>
+                    </div>
+                    <div id="stops-container" class="stops-container"></div>
+                </div>
+
+                <div class="action-row">
+                    <button type="button" id="swap-button" class="pill pill-ghost">Swap</button>
+                    <button type="button" id="reset-button" class="pill pill-ghost">Reset</button>
+                    <button type="button" id="plan-button" class="pill pill-solid pill-wide">Plan route</button>
+                </div>
+
+                <div class="emergency">
+                    <p class="field-label" id="emergency-label">Nearest emergency place</p>
+                    <div class="button-row" role="group" aria-labelledby="emergency-label">
+                        <button type="button" class="pill pill-ghost pill-small" data-emergency="hospital">Hospital</button>
+                        <button type="button" class="pill pill-ghost pill-small" data-emergency="fire">Fire</button>
+                        <button type="button" class="pill pill-ghost pill-small" data-emergency="police">Police</button>
+                    </div>
+                </div>
+
+                <p id="status-message" class="status" aria-live="polite"></p>
+            </section>
+        </div>
+
+        <div class="console-map">
+            <section class="panel map-panel" aria-labelledby="map-heading">
+                <div class="panel-head">
+                    <h2 id="map-heading">The city</h2>
+                    <p class="map-note">Hover a place to read its name. Click one to use it.</p>
+                </div>
+
+                <div class="map-frame" id="map-frame">
+                    <svg id="city-map" viewBox="0 0 640 730" role="group"
+                         aria-label="Map of the fictional city, 18 places and 31 roads. Each place opens a menu. Drag to pan and scroll to zoom."></svg>
+                    <div class="map-controls" role="group" aria-label="Map zoom">
+                        <button type="button" id="zoom-in" class="map-control" aria-label="Zoom in">+</button>
+                        <button type="button" id="zoom-out" class="map-control" aria-label="Zoom out">&minus;</button>
+                        <button type="button" id="zoom-reset" class="map-control" aria-label="Reset zoom">&#8634;</button>
+                    </div>
+                    <div id="road-tooltip" class="road-tooltip" role="status" hidden></div>
+                    <div id="map-popover" class="map-popover" hidden>
+                        <p class="popover-name" id="popover-name"></p>
+                        <button type="button" class="popover-action" data-action="start">Set as start</button>
+                        <button type="button" class="popover-action" data-action="destination">Set as destination</button>
+                        <button type="button" class="popover-action" data-action="stop">Add as stop</button>
+                    </div>
+                </div>
+
+                <ul class="legend">
+                    <li><span class="legend-line legend-low"></span>Quiet</li>
+                    <li><span class="legend-line legend-medium"></span>Busy</li>
+                    <li><span class="legend-line legend-high"></span>Jammed</li>
+                    <li><span class="legend-line legend-route"></span>Your route</li>
+                    <li><span class="legend-line legend-original"></span>Your order</li>
+                </ul>
+            </section>
+        </div>
+    </section>
+
+    <div class="results">
+        <section class="panel empty-state" id="empty-state">
+            <h2>Nothing planned yet</h2>
+            <p>Choose a start and a destination, add any stops you want to visit, then press Plan route. The map will draw the trip.</p>
+        </section>
+
+        <section class="panel loading-card" id="loading-card" hidden aria-hidden="true">
+            <div class="shimmer shimmer-number"></div>
+            <div class="shimmer shimmer-line"></div>
+            <div class="shimmer shimmer-line shimmer-short"></div>
+            <div class="shimmer shimmer-block"></div>
+        </section>
+
+        <section class="panel answer" id="route-summary" aria-labelledby="summary-heading" hidden>
+            <h2 id="summary-heading" class="visually-hidden">Your plan</h2>
+
+            <div class="saved">
+                <p class="saved-number"><span id="saved-number">0</span></p>
+                <p class="saved-label" id="saved-label">minutes saved</p>
+            </div>
+
+            <p id="summary-text" class="summary-text"></p>
+
+            <p id="arrival-line" class="arrival-line" hidden></p>
+
+            <div id="comparison-table" class="strips"></div>
+
+            <div class="copy-row">
+                <button type="button" id="copy-button" class="pill pill-ghost" hidden>Copy plan</button>
+            </div>
+        </section>
+
+        <section class="panel answer" id="steps-section" aria-labelledby="steps-heading" hidden>
+            <h2 id="steps-heading">Leg by leg</h2>
+            <div id="route-steps"></div>
+        </section>
+    </div>
+</main>
+
+<footer class="colophon">
+    <div class="container">
+        <p>Route Navigator is a practice project. The city is invented, every road is two-way, and the traffic levels are fixed values in the data.</p>
+    </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
